@@ -9,8 +9,7 @@
   <meta name="author" content="Your Name">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="Hash extension attack We had Filippo Valsorda hold a small presentation at Hacker School today. The topic has how to exploit a hash extension &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -95,7 +94,72 @@
   </header>
 
 
-  <div class="entry-content">
+  <div class="entry-content"><hr />
+
+<h2>Hash extension attack</h2>
+
+<p>We had <a href="https://filippo.io/">Filippo Valsorda</a> hold a small presentation at <a href="http://www.hackerschool.com">Hacker School</a> today. The topic has how to exploit a hash extension vulnerability.</p>
+
+<p>Problem lies in a combination of how hash-functions work, and unsafe ways of transmitting an API-secret in a request. The example-case was VIMEO&rsquo;s old API that had this vulnerability some years ago (nowdays the vulnerability is fixed).</p>
+
+<h3>About MD5-hashes</h3>
+
+<p><a href="http://en.wikipedia.org/wiki/MD5">MD5 hashes</a>  can&rsquo;t be reversed, it&rsquo;s a one-way functions.</p>
+
+<p>This means  checking equality a server checks hashes a string and compares it with the received hashed string. The actual passwords are never compared, just the hashes.For ex. a naive hashed password check would mean taking a password from the database and comparing it with the hashed password from client.</p>
+
+<p>MD5 hashses are nearly unique - accidental collisions are extremely rare, but a <a href="http://en.wikipedia.org/wiki/Collision_attack">collision attack</a> is possible. It&rsquo;s an iterative hash function, which means hashes are created by combining 512-bit (=64 byte) chunks of the input the the hash seed (which is predefined in MD5 spec). The hash is created only based on the input, so the next seed is formed from the created hash etc. This means the hash has to be extensible.</p>
+
+<h3>The vulnerability</h3>
+
+<p>The extensibility is built so, that there is no secret component. This means if someone captures the hash, they can extend it. This is important.</p>
+
+<p>In this case, the hashed signature string was created by concatenating secret and key-value pairs alphabetically, md5-hashing that string, and adding it as api_sig value to the request. So (in this request) naive pseudocode representation of the request could be:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>method: vimeo.test.login
+</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
+</span><span class='line'>api_sig: hash_md5(api_secret + "api_key" + api_key + "method" + method)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the hash would be created from string</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sec12345api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This had two design flaws:
+- The secret was prepended to the string that was hashed
+- All the other components (except the secret) is passed in plaintext in the request</p>
+
+<p>If the attacker captures a request (eg. by doing a <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle-attack</a>), changes the content, extends the signature hash to match the new request content, she can successfully pretend to be the original user and run any command she wishes (presuming it&rsquo;s allowed for the original user).</p>
+
+<p>Example of the forged request:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>a: api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xe8\x02\x00\x00\x00\x00\x00\x00
+</span><span class='line'>video_id: 1337
+</span><span class='line'>favorite: 1
+</span><span class='line'>method: vimeo.videos.setFavorite
+</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
+</span><span class='line'>api_sig: caf3d8384c2fbf2917c2b78dcf8ac588</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>api_sig</code> is formed by hashing the whole new request key-value pairs in alphabetical order. An important part is the <code>a</code>-attribute, which contains the old request + padding required by MD5, which can be considered just an implementation detail. The main idea is that the new signature can be constructed from the old request and new added key-value pairs, which may be completely different from the original ones.</p>
+
+<h3>Further reading</h3>
+
+<p>A more complete article about hash-extension attacks
+<a href="https://blog.skullsecurity.org/2012/everything-you-need-to-know-about-hash-length-extension-attacks">https://blog.skullsecurity.org/2012/everything-you-need-to-know-about-hash-length-extension-attacks</a></p>
+
+<p>A very thorough article about why and how to use salts &amp; hashes when storing passwords: <a href="http://www.codeproject.com/Articles/704865/Salted-Password-Hashing-Doing-it-Right">http://www.codeproject.com/Articles/704865/Salted-Password-Hashing-Doing-it-Right</a></p>
 </div>
   
   

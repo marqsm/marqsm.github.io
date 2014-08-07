@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://marqsm.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Hash | My Octopress Blog]]></title>
+  <link href="http://marqsm.github.io/blog/categories/hash/atom.xml" rel="self"/>
   <link href="http://marqsm.github.io/"/>
   <updated>2014-08-07T12:30:45-04:00</updated>
   <id>http://marqsm.github.io/</id>
@@ -38,21 +38,16 @@
 
 <p>The extensibility is built so, that there is no secret component. This means if someone captures the hash, they can extend it. This is important.</p>
 
-<p>In this case, the hashed signature string was created by concatenating secret and key-value pairs alphabetically, md5-hashing that string, and adding it as api_sig value to the request. So (in this request) naive pseudocode representation of the request could be:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>method: vimeo.test.login
-</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
-</span><span class='line'>api_sig: hash_md5(api_secret + "api_key" + api_key + "method" + method)</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the hash would be created from string</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sec12345api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login</span></code></pre></td></tr></table></div></figure>
-
+<p>In this case, the hashed signature string was created by concatenating secret and key-value pairs alphabetically, md5-hashing that string, and adding it as api_sig value to the request. So (in this request) naive pseudocode representation of the request could be:
+<code>
+method: vimeo.test.login
+api_key: e1df59512d6e136e5ba0936e8ac273cb
+api_sig: hash_md5(api_secret + "api_key" + api_key + "method" + method)
+</code>
+So the hash would be created from string
+<code>
+sec12345api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login
+</code></p>
 
 <p>This had two design flaws:
 - The secret was prepended to the string that was hashed
@@ -60,23 +55,16 @@
 
 <p>If the attacker captures a request (eg. by doing a <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle-attack</a>), changes the content, extends the signature hash to match the new request content, she can successfully pretend to be the original user and run any command she wishes (presuming it&rsquo;s allowed for the original user).</p>
 
-<p>Example of the forged request:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>a: api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xe8\x02\x00\x00\x00\x00\x00\x00
-</span><span class='line'>video_id: 1337
-</span><span class='line'>favorite: 1
-</span><span class='line'>method: vimeo.videos.setFavorite
-</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
-</span><span class='line'>api_sig: caf3d8384c2fbf2917c2b78dcf8ac588</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>api_sig</code> is formed by hashing the whole new request key-value pairs in alphabetical order. An important part is the <code>a</code>-attribute, which contains the old request + padding required by MD5, which can be considered just an implementation detail. The main idea is that the new signature can be constructed from the old request and new added key-value pairs, which may be completely different from the original ones.</p>
+<p>Example of the forged request:
+<code>
+a: api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xe8\x02\x00\x00\x00\x00\x00\x00
+video_id: 1337
+favorite: 1
+method: vimeo.videos.setFavorite
+api_key: e1df59512d6e136e5ba0936e8ac273cb
+api_sig: caf3d8384c2fbf2917c2b78dcf8ac588
+</code>
+<code>api_sig</code> is formed by hashing the whole new request key-value pairs in alphabetical order. An important part is the <code>a</code>-attribute, which contains the old request + padding required by MD5, which can be considered just an implementation detail. The main idea is that the new signature can be constructed from the old request and new added key-value pairs, which may be completely different from the original ones.</p>
 
 <h3>Further reading</h3>
 
