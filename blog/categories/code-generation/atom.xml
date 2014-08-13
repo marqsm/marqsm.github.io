@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Code-generation, | Code, Cook, Sleep, repeat.]]></title>
+  <link href="http://marqsm.github.io/blog/categories/code-generation/atom.xml" rel="self"/>
+  <link href="http://marqsm.github.io/"/>
+  <updated>2014-08-13T19:36:54-04:00</updated>
+  <id>http://marqsm.github.io/</id>
+  <author>
+    <name><![CDATA[Marcus Malka]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Using Esprima to Process JavaScript]]></title>
+    <link href="http://marqsm.github.io/blog/2014/08/13/using-esprima-to-process-javascript/"/>
+    <updated>2014-08-13T19:35:29-04:00</updated>
+    <id>http://marqsm.github.io/blog/2014/08/13/using-esprima-to-process-javascript</id>
+    <content type="html"><![CDATA[<h1>Using Esprima to parse JS to JS</h1>
+
+<p>It&rsquo;s my third-last week in <a href="http://www.hackerschool.com">Hacker School</a>,
+and people seem to play around a lot with ASTs (mostly in Python with
+provides run-time AST modification - how cool is that!?!). No wonder,
+after <a href="http://notes.pault.ag/">Paul Tagliamonte</a> demonstrated <a href="https://www.youtube.com/watch?v=AmMaN1AokTI">how much
+fun</a> it is!</p>
+
+<p>I&rsquo;ve been using them to create my learning tool that overloads JS
+operators with more transparent versions modified from V8 code.</p>
+
+<p>This is a simplified walkthrough of the essential parts of the
+overloading process.</p>
+
+<p>The REPL is still under construction but I&rsquo;ll link it to this article
+when I get it to a stable state.</p>
+
+<h3>Goal</h3>
+
+<p>For my REPL I need to overload javascript operators and functions with
+my own functions. Since JS doesn&rsquo;t have operator overloading, I&rsquo;ll need
+to take the code in, replace the things I want to overload, and run the
+code.</p>
+
+<p>Other possible uses for similar pipeline are syntax checking, adding
+logging magically to all functions in the codebase, code minification /
+obfuscation lisp/c-like macros etc. So this is very powerful for most
+kind of JS preprocessing.</p>
+
+<p>Say I&rsquo;d like to transform</p>
+
+<pre><code>var a = 4 + "foo";
+</code></pre>
+
+<p>to</p>
+
+<pre><code>var a = ADD(4, foo);
+</code></pre>
+
+<p>Seems clear? Let&rsquo;s see how we&rsquo;ll go about doing it.</p>
+
+<h3>Summary of actions</h3>
+
+<ol>
+<li>Create an abstract syntax tree from the code</li>
+<li>Replace the function calls (from the tree)</li>
+<li>Re-create the JS-code (from the syntax tree)</li>
+<li>Run the modified code (good old eval)</li>
+</ol>
+
+
+<h3>How</h3>
+
+<h4>Getting ready</h4>
+
+<p>First thing is to include esprima.js, which you can get through <a href="http://bower.io/">bower</a>.
+Esprima parses your JS code to an [abstract syntax tree] (AST). This is
+a tree-representation of your program, which can be manipulated more
+easily and systematically than text-shaped code. You can play with the
+<a href="(http://esprima.org/demo/parse.html)">esprima demo</a> and see what kind of ASTs your code produces.</p>
+
+<p>To get it running on your own machine, first step is naturally to
+install it.</p>
+
+<pre><code>bower install esprima
+</code></pre>
+
+<p>Include in your JS, and you&rsquo;re ready to dabble!</p>
+
+<h4>1. Creating abstract syntax trees</h4>
+
+<p>I want to see the syntax trees my different rows generate, so my test is</p>
+
+<pre><code>var ast = esprima.parse("var answer = 34 + 8"),
+    ast2 = esprima.parse("var answer2 = ADD(34, 8)")
+</code></pre>
+
+<p>Which means I can see how the syntax trees differ for my source and
+target tree.</p>
+
+<pre><code>{
+  "type": "Program",
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "id": {
+            "type": "Identifier",
+            "name": "answer"
+          },
+          "init": {
+            "type": "BinaryExpression",
+            "operator": "+",
+            "left": {
+              "type": "Literal",
+              "value": 34,
+              "raw": "34"
+            },
+            "right": {
+              "type": "Literal",
+              "value": 8,
+              "raw": "8"
+            }
+          }
+        }
+      ],
+      "kind": "var"
+    }
+  ]
+}
+</code></pre>
+
+<p>The ast2 part seems otherwise the same, but init-part is different..</p>
+
+<pre><code>  "init": {
+    "type": "CallExpression",
+    "callee": {
+      "type": "Identifier",
+      "name": "ADD"
+    },
+    "arguments": [
+      {
+        "type": "Literal",
+        "value": 34,
+        "raw": "34"
+      },
+      {
+        "type": "Literal",
+        "value": 8,
+        "raw": "8"
+      }
+    ]
+  }
+</code></pre>
+
+<h4>2. Replace the function calls</h4>
+
+<p>So I&rsquo;ll make a function that overwrites the former with the latter:</p>
+
+<pre><code>function replacePlusByADD(node) {
+    // get operands from +
+    var a = node.left,
+        b = node.right;
+
+    node.type = "CallExpression";
+    node.callee = {
+      "type": "Identifier",
+      "name": "ADD"
+    };
+    node.arguments = [a, b];
+
+    // reset unnecessary properties
+    node.left = null;
+    node.right = null;
+    node.operator = null;
+
+    return node;
+}
+</code></pre>
+
+<p>I&rsquo;ll use <code>estraverse</code> for the AST traversal</p>
+
+<pre><code>    var ast  = esprima.parse(code);
+    estraverse.traverse(ast, {
+        enter: function(node) {
+            if (node.type === "BinaryExpression") {
+                replacePlusByADD(node);
+            }
+        }
+    });
+</code></pre>
+
+<h4>3 &amp; 4. Re-create the JS-code and run</h4>
+
+<p>This is really just</p>
+
+<pre><code>    var modified_code = escodegen.generate(ast);
+
+    eval(modified_code);
+</code></pre>
+
+<p>And Voilà! We have just created a JS pre-processor.</p>
+
+<p>I found playing around with these tools, very much fun, in addition to
+helping me make pretty complex things in very few lines of code.</p>
+
+<p>More resources:<br/>
+<a href="http://sevinf.github.io/blog/2012/09/29/esprima-tutorial/">Esprima
+tutorial</a><br/>
+<a href="http://tobyho.com/2013/12/02/fun-with-esprima/">Fun with Esprima</a></p>
+
+<p>[abstract syntax
+tree]:(<a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">http://en.wikipedia.org/wiki/Abstract_syntax_tree</a>)</p>
+]]></content>
+  </entry>
+  
+</feed>

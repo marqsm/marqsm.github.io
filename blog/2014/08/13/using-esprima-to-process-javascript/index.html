@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Code, Cook, Sleep, repeat.</title>
+  <title>Using Esprima to Process JavaScript - Code, Cook, Sleep, repeat.</title>
   <meta name="author" content="Marcus Malka">
 
   
@@ -19,7 +19,7 @@ and people seem to play around a lot with ASTs (mostly in Python with &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://marqsm.github.io">
+  <link rel="canonical" href="http://marqsm.github.io/blog/2014/08/13/using-esprima-to-process-javascript">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Code, Cook, Sleep, repeat." type="application/atom+xml">
@@ -64,15 +64,12 @@ and people seem to play around a lot with ASTs (mostly in Python with &hellip;">
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/08/13/using-esprima-to-process-javascript/">Using Esprima to Process JavaScript</a></h1>
+      <h1 class="entry-title">Using Esprima to Process JavaScript</h1>
     
     
       <p class="meta">
@@ -95,7 +92,7 @@ and people seem to play around a lot with ASTs (mostly in Python with &hellip;">
   </header>
 
 
-  <div class="entry-content"><h1>Using Esprima to parse JS to JS</h1>
+<div class="entry-content"><h1>Using Esprima to parse JS to JS</h1>
 
 <p>It&rsquo;s my third-last week in <a href="http://www.hackerschool.com">Hacker School</a>,
 and people seem to play around a lot with ASTs (mostly in Python with
@@ -377,22 +374,16 @@ tutorial</a><br/>
 <p>[abstract syntax
 tree]:(<a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">http://en.wikipedia.org/wiki/Abstract_syntax_tree</a>)</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/06/hash-extension-attack/">Hash Extension Attack</a></h1>
-    
-    
-      <p class="meta">
-        
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Marcus Malka</span></span>
+
+      
 
 
 
@@ -404,92 +395,38 @@ tree]:(<a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">http://en.wik
   
 
 
-<time datetime="2014-08-06T17:43:01-04:00" pubdate data-updated="true">Aug 6<sup>th</sup>, 2014</time>
-        
-      </p>
+<time datetime="2014-08-13T19:35:29-04:00" pubdate data-updated="true">Aug 13<sup>th</sup>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ast/'>ast,</a>, <a class='category' href='/blog/categories/code-generation/'>code-generation,</a>, <a class='category' href='/blog/categories/javascript/'>javascript,</a>, <a class='category' href='/blog/categories/parsing/'>parsing,</a>, <a class='category' href='/blog/categories/repl/'>repl</a>
+  
+</span>
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><hr />
-
-<h2>Hash extension attack</h2>
-
-<p>We had <a href="https://filippo.io/">Filippo Valsorda</a> hold a small presentation at <a href="http://www.hackerschool.com">Hacker School</a> today. The topic has how to exploit a hash extension vulnerability.</p>
-
-<p>Problem lies in a combination of how hash-functions work, and unsafe ways of transmitting an API-secret in a request. The example-case was VIMEO&rsquo;s old API that had this vulnerability some years ago (nowdays the vulnerability is fixed).</p>
-
-<h3>About MD5-hashes</h3>
-
-<p><a href="http://en.wikipedia.org/wiki/MD5">MD5 hashes</a>  can&rsquo;t be reversed, it&rsquo;s a one-way functions.</p>
-
-<p>This means  checking equality a server checks hashes a string and compares it with the received hashed string. The actual passwords are never compared, just the hashes.For ex. a naive hashed password check would mean taking a password from the database and comparing it with the hashed password from client.</p>
-
-<p>MD5 hashses are nearly unique - accidental collisions are extremely rare, but a <a href="http://en.wikipedia.org/wiki/Collision_attack">collision attack</a> is possible. It&rsquo;s an iterative hash function, which means hashes are created by combining 512-bit (=64 byte) chunks of the input the the hash seed (which is predefined in MD5 spec). The hash is created only based on the input, so the next seed is formed from the created hash etc. This means the hash has to be extensible.</p>
-
-<h3>The vulnerability</h3>
-
-<p>The extensibility is built so, that there is no secret component. This means if someone captures the hash, they can extend it. This is important.</p>
-
-<p>In this case, the hashed signature string was created by concatenating secret and key-value pairs alphabetically, md5-hashing that string, and adding it as api_sig value to the request. So (in this request) naive pseudocode representation of the request could be:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>method: vimeo.test.login
-</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
-</span><span class='line'>api_sig: hash_md5(api_secret + "api_key" + api_key + "method" + method)</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the hash would be created from string</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sec12345api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This had two design flaws:
-- The secret was prepended to the string that was hashed
-- All the other components (except the secret) is passed in plaintext in the request</p>
-
-<p>If the attacker captures a request (eg. by doing a <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle-attack</a>), changes the content, extends the signature hash to match the new request content, she can successfully pretend to be the original user and run any command she wishes (presuming it&rsquo;s allowed for the original user).</p>
-
-<p>Example of the forged request:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>a: api_keye1df59512d6e136e5ba0936e8ac273cbmethodvimeo.test.login\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xe8\x02\x00\x00\x00\x00\x00\x00
-</span><span class='line'>video_id: 1337
-</span><span class='line'>favorite: 1
-</span><span class='line'>method: vimeo.videos.setFavorite
-</span><span class='line'>api_key: e1df59512d6e136e5ba0936e8ac273cb
-</span><span class='line'>api_sig: caf3d8384c2fbf2917c2b78dcf8ac588</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>api_sig</code> is formed by hashing the whole new request key-value pairs in alphabetical order. An important part is the <code>a</code>-attribute, which contains the old request + padding required by MD5, which can be considered just an implementation detail. The main idea is that the new signature can be constructed from the old request and new added key-value pairs, which may be completely different from the original ones.</p>
-
-<h3>Further reading</h3>
-
-<p>A more complete article about hash-extension attacks
-<a href="https://blog.skullsecurity.org/2012/everything-you-need-to-know-about-hash-length-extension-attacks">https://blog.skullsecurity.org/2012/everything-you-need-to-know-about-hash-length-extension-attacks</a></p>
-
-<p>A very thorough article about why and how to use salts &amp; hashes when storing passwords: <a href="http://www.codeproject.com/Articles/704865/Salted-Password-Hashing-Doing-it-Right">http://www.codeproject.com/Articles/704865/Salted-Password-Hashing-Doing-it-Right</a></p>
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://marqsm.github.io/blog/2014/08/13/using-esprima-to-process-javascript/" data-via="" data-counturl="http://marqsm.github.io/blog/2014/08/13/using-esprima-to-process-javascript/" >Tweet</a>
+  
+  
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/08/06/hash-extension-attack/" title="Previous Post: Hash extension attack">&laquo; Hash extension attack</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
 </div>
+
 <aside class="sidebar">
   
     <section>
@@ -513,6 +450,7 @@ tree]:(<a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">http://en.wik
 
   
 </aside>
+
 
     </div>
   </div>
