@@ -9,8 +9,7 @@
   <meta name="author" content="Marcus Malka">
 
   
-  <meta name="description" content="Using Esprima to parse JS to JS It&rsquo;s my third-last week in Hacker School,
-and people seem to play around a lot with ASTs (mostly in Python with &hellip;">
+  <meta name="description" content="It&rsquo;s my third-last week in Hacker School, and people seem to play around a lot with ASTs (mostly in Python with provides run-time AST &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -95,34 +94,19 @@ and people seem to play around a lot with ASTs (mostly in Python with &hellip;">
   </header>
 
 
-  <div class="entry-content"><h1>Using Esprima to parse JS to JS</h1>
+  <div class="entry-content"><p>It&rsquo;s my third-last week in <a href="http://www.hackerschool.com">Hacker School</a>, and people seem to play around a lot with ASTs (mostly in Python with provides run-time AST modification - how cool is that!?!). No wonder, after <a href="http://notes.pault.ag/">Paul Tagliamonte</a> demonstrated <a href="https://www.youtube.com/watch?v=AmMaN1AokTI">how much fun</a> it is!</p>
 
-<p>It&rsquo;s my third-last week in <a href="http://www.hackerschool.com">Hacker School</a>,
-and people seem to play around a lot with ASTs (mostly in Python with
-provides run-time AST modification - how cool is that!?!). No wonder,
-after <a href="http://notes.pault.ag/">Paul Tagliamonte</a> demonstrated <a href="https://www.youtube.com/watch?v=AmMaN1AokTI">how much
-fun</a> it is!</p>
+<p>I&rsquo;ve been using them to create my learning tool that overloads JS operators with more transparent versions modified from V8 code.</p>
 
-<p>I&rsquo;ve been using them to create my learning tool that overloads JS
-operators with more transparent versions modified from V8 code.</p>
+<p>This is a simplified walkthrough of the essential parts of the overloading process.</p>
 
-<p>This is a simplified walkthrough of the essential parts of the
-overloading process.</p>
-
-<p>The REPL is still under construction but I&rsquo;ll link it to this article
-when I get it to a stable state.</p>
+<p>The REPL is still under construction but I&rsquo;ll link it to this article when I get it to a stable state.</p>
 
 <h3>Goal</h3>
 
-<p>For my REPL I need to overload javascript operators and functions with
-my own functions. Since JS doesn&rsquo;t have operator overloading, I&rsquo;ll need
-to take the code in, replace the things I want to overload, and run the
-code.</p>
+<p>For my REPL I need to overload javascript operators and functions with my own functions. Since JS doesn&rsquo;t have operator overloading, I&rsquo;ll need to take the code in, replace the things I want to overload, and run the code.</p>
 
-<p>Other possible uses for similar pipeline are syntax checking, adding
-logging magically to all functions in the codebase, code minification /
-obfuscation lisp/c-like macros etc. So this is very powerful for most
-kind of JS preprocessing.</p>
+<p>Other possible uses for similar pipeline are syntax checking, adding logging magically to all functions in the codebase, code minification / obfuscation lisp/c-like macros etc. So this is very powerful for most kind of JS preprocessing.</p>
 
 <p>Say I&rsquo;d like to transform</p>
 
@@ -152,14 +136,9 @@ kind of JS preprocessing.</p>
 
 <h4>Getting ready</h4>
 
-<p>First thing is to include esprima.js, which you can get through <a href="http://bower.io/">bower</a>.
-Esprima parses your JS code to an [abstract syntax tree] (AST). This is
-a tree-representation of your program, which can be manipulated more
-easily and systematically than text-shaped code. You can play with the
-<a href="(http://esprima.org/demo/parse.html)">esprima demo</a> and see what kind of ASTs your code produces.</p>
+<p>First thing is to include esprima.js, which you can get through <a href="http://bower.io/">bower</a>. Esprima parses your JS code to an [abstract syntax tree] (AST). This is a tree-representation of your program, which can be manipulated more easily and systematically than text-shaped code. You can play with the <a href="(http://esprima.org/demo/parse.html)">esprima demo</a> and see what kind of ASTs your code produces.</p>
 
-<p>To get it running on your own machine, first step is naturally to
-install it.</p>
+<p>To get it running on your own machine, first step is naturally to install it.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>bower install esprima</span></code></pre></td></tr></table></div></figure>
@@ -177,8 +156,7 @@ install it.</p>
 </span><span class='line'>    ast2 = esprima.parse("var answer2 = ADD(34, 8)")</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Which means I can see how the syntax trees differ for my source and
-target tree.</p>
+<p>Which means I can see how the syntax trees differ for my source and target tree.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -366,12 +344,11 @@ target tree.</p>
 
 <p>And Voilà! We have just created a JS pre-processor.</p>
 
-<p>I found playing around with these tools, very much fun, in addition to
-helping me make pretty complex things in very few lines of code.</p>
+<p>I found playing around with these tools, very much fun, in addition to helping me make pretty complex things in very few lines of code.</p>
 
-<p>More resources:<br/>
+<p>More resources:
 <a href="http://sevinf.github.io/blog/2012/09/29/esprima-tutorial/">Esprima
-tutorial</a><br/>
+tutorial</a>
 <a href="http://tobyho.com/2013/12/02/fun-with-esprima/">Fun with Esprima</a></p>
 
 <p>[abstract syntax
