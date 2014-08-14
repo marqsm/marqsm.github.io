@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parsing, | Code, Cook, Sleep, repeat.]]></title>
   <link href="http://marqsm.github.io/blog/categories/parsing/atom.xml" rel="self"/>
   <link href="http://marqsm.github.io/"/>
-  <updated>2014-08-13T19:43:29-04:00</updated>
+  <updated>2014-08-14T14:54:22-04:00</updated>
   <id>http://marqsm.github.io/</id>
   <author>
     <name><![CDATA[Marcus Malka]]></name>
@@ -58,7 +58,7 @@
 
 <h4>Getting ready</h4>
 
-<p>First thing is to include esprima.js, which you can get through <a href="http://bower.io/">bower</a>. Esprima parses your JS code to an [abstract syntax tree] (AST). This is a tree-representation of your program, which can be manipulated more easily and systematically than text-shaped code. You can play with the <a href="(http://esprima.org/demo/parse.html)">esprima demo</a> and see what kind of ASTs your code produces.</p>
+<p>First thing is to include esprima.js, which you can get through <a href="http://bower.io/">bower</a>. Esprima parses your JS code to an <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">abstract syntax tree</a> (AST). This is a tree-representation of your program, which can be manipulated more easily and systematically than text-shaped code. You can play with the <a href="http://esprima.org/demo/parse.html">esprima demo</a> and see what kind of ASTs your code produces.</p>
 
 <p>To get it running on your own machine, first step is naturally to install it.</p>
 
@@ -188,9 +188,6 @@
 <a href="http://sevinf.github.io/blog/2012/09/29/esprima-tutorial/">Esprima
 tutorial</a>
 <a href="http://tobyho.com/2013/12/02/fun-with-esprima/">Fun with Esprima</a></p>
-
-<p>[abstract syntax
-tree]:(<a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">http://en.wikipedia.org/wiki/Abstract_syntax_tree</a>)</p>
 ]]></content>
   </entry>
   
